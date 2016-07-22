@@ -1,0 +1,9 @@
+***REMOVED***
+<resources>
+	<color name="background">#E895A4</color>
+	<color name="colorPrimary">#7CA37E</color>
+	<color name="colorPrimaryDark">#3A753E</color>
+	<color name="colorAccent">@color/colorPrimary</color>
+	<color name="iconColor">#f9e5e9</color>
+	<color name="textHint">@color/iconColor</color>
+</resources>
