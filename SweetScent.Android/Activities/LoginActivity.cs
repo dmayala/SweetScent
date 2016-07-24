@@ -5,11 +5,11 @@ using SweetScent.Fragments;
 namespace SweetScent.Activities
 {
     [Activity(MainLauncher = true, Icon = "@drawable/icon")]
-    public class HomeActivity : SingleFragmentActivity
+    public class LoginActivity : SingleFragmentActivity
     {
         public static Intent NewIntent(Context context)
         {
-            return new Intent(context, typeof(HomeActivity));
+            return new Intent(context, typeof(LoginActivity));
         }
 
         protected override Android.Support.V4.App.Fragment CreateFragment()
