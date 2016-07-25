@@ -1,12 +1,13 @@
-﻿using PokemonGo.RocketAPI.GeneratedCode;
+﻿using POGOProtos.Map.Fort;
+using POGOProtos.Map.Pokemon;
 using System.Collections.Generic;
 
 namespace SweetScent.Core.Containers
 {
     public class PogoMapResponse
     {
-        private IEnumerable<FortData> Forts;
-        private IEnumerable<MapPokemon> Pokemon;
+        public IEnumerable<FortData> Forts { get; private set; }
+        public IEnumerable<MapPokemon> Pokemon { get; private set; }
 
         public PogoMapResponse(IEnumerable<FortData> Forts, IEnumerable<MapPokemon> Pokemon)
         {
