@@ -1,6 +1,4 @@
-﻿using AllEnum;
-using SweetScent.Core.Enums;
-using System.Collections.Generic;
+﻿using SweetScent.Core.Enums;
 
 namespace SweetScent.Core
 {

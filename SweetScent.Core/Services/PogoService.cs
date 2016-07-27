@@ -1,11 +1,8 @@
-﻿using PokemonGo.RocketAPI;
-using SweetScent.Core.Containers;
+﻿using SweetScent.Core.Containers;
 using System.Threading.Tasks;
 using System.Linq;
 using System;
-using POGOProtos.Map.Fort;
-using POGOProtos.Map.Pokemon;
-using System.Collections.Generic;
+using PokemonGo.RocketAPI;
 
 namespace SweetScent.Core.Services
 {
@@ -16,9 +13,6 @@ namespace SweetScent.Core.Services
 
         public PogoService(ISettings settings)
         {
-            AutoMapper.Mapper.CreateMap<PokemonGo.RocketAPI.GeneratedCode.MapPokemon, MapPokemon>();
-            AutoMapper.Mapper.CreateMap<PokemonGo.RocketAPI.GeneratedCode.FortData, FortData>();
-
             _settings = settings;
             _client = new Client(new SettingsMap(_settings));
         }
@@ -27,13 +21,11 @@ namespace SweetScent.Core.Services
         {
             try
             {
-                await _client.DoPtcLogin(_settings.PtcUsername, _settings.PtcPassword);
-                await _client.SetServer();
+                await _client.Login.DoPtcLogin();
 
-                var mapObjects = await _client.GetMapObjects();
-                var pokeObj = mapObjects.MapCells.SelectMany(m => m.CatchablePokemons);
-                var pokemon = AutoMapper.Mapper.Map<IEnumerable<MapPokemon>>(pokeObj);
-                var forts = AutoMapper.Mapper.Map<IEnumerable<FortData>>(mapObjects.MapCells.SelectMany(m => m.Forts));
+                var mapObjects = await _client.Map.GetMapObjects();
+                var pokemon = mapObjects.MapCells.SelectMany(m => m.CatchablePokemons);
+                var forts = mapObjects.MapCells.SelectMany(m => m.Forts);
 
                 return new PogoMapResponse(forts, pokemon);
             }

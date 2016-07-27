@@ -9,6 +9,7 @@ using SweetScent.Activities;
 using System;
 using Android.Runtime;
 using Android.Support.Design.Widget;
+using Android.Content;
 
 namespace SweetScent.Fragments
 {
@@ -77,6 +78,7 @@ namespace SweetScent.Fragments
         private void OnClickLoginButton(object sender, EventArgs e)
         {
             var intent = MapsActivity.NewIntent(Context);
+            intent.SetFlags(ActivityFlags.NewTask | ActivityFlags.ClearTop);
             StartActivity(intent);
         }
     }

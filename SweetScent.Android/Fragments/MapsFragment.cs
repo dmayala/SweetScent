@@ -4,9 +4,10 @@ using Android.OS;
 using SweetScent.Core.Containers;
 using Android.Locations;
 using Android.Content;
-using System.Linq;
 using SweetScent.Core.Services;
 using System.Threading.Tasks;
+using SweetScent.Utils;
+using System;
 
 namespace SweetScent.Fragments
 {
@@ -67,13 +68,28 @@ namespace SweetScent.Fragments
         private async Task LoadPogoMap()
         {
             var mapData = await _pogoService.GetMapData();
-            
+
             foreach (var pokemon in mapData.Pokemon)
             {
+                // Grab correct icon for Pokemon
+                var uri = "p" + (int) pokemon.PokemonId;
+                int resourceID = Context.Resources.GetIdentifier(uri, "drawable", Context.PackageName);
+
+                // Find the duration
+                var expirationDate = DateTimeOffset.FromUnixTimeMilliseconds(pokemon.ExpirationTimestampMs).UtcDateTime;
+                var duration = expirationDate.Subtract(DateTime.Now);
+                var timeOut = string.Format("{0:D2}:{1:D2}", duration.Minutes, duration.Seconds);
+
+                int scale = 2;
+
+                var bitmap = DrawableUtils.WriteTextOnDrawable(resourceID, timeOut, scale, Context);
+
                 var point = new LatLng(pokemon.Latitude, pokemon.Longitude);
                 var marker = new MarkerOptions()
+                    .SetIcon(BitmapDescriptorFactory.FromBitmap(bitmap))
                     .SetPosition(point)
-                    .SetTitle(pokemon.PokemonId.ToString());
+                    .SetTitle(pokemon.PokemonId.ToString())
+                    .SetSnippet(timeOut);
                 _map.AddMarker(marker);
             }
         }

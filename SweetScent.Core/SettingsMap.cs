@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using AllEnum;
-using PokemonGo.RocketAPI;
-using PokemonGo.RocketAPI.Enums;
+﻿using PokemonGo.RocketAPI.Enums;
 
 namespace SweetScent.Core
 {
@@ -28,8 +24,6 @@ namespace SweetScent.Core
         public double DefaultLongitude { get; set; }
 
         public string GoogleRefreshToken { get; set; }
-
-        public ICollection<KeyValuePair<ItemId, int>> itemRecycleFilter { get; set; }
 
         public string PtcPassword { get; set; }
 
