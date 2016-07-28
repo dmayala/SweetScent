@@ -21,8 +21,6 @@ namespace SweetScent.Core.Services
         {
             try
             {
-                await _client.Login.DoPtcLogin();
-
                 var mapObjects = await _client.Map.GetMapObjects();
                 var pokemon = mapObjects.MapCells.SelectMany(m => m.CatchablePokemons);
                 var forts = mapObjects.MapCells.SelectMany(m => m.Forts);
@@ -35,6 +33,11 @@ namespace SweetScent.Core.Services
             }
 
             return default(PogoMapResponse);
+        }
+
+        public async Task LoginAsync()
+        {
+            await _client.Login.DoPtcLogin();
         }
     }
 }

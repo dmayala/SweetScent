@@ -1,26 +1,31 @@
 using Android.Gms.Maps;
 using Android.Gms.Maps.Model;
 using Android.OS;
-using SweetScent.Core.Containers;
 using Android.Locations;
 using Android.Content;
 using SweetScent.Core.Services;
 using System.Threading.Tasks;
 using SweetScent.Utils;
 using System;
+using Android.Views;
+using Android.Support.V4.App;
+using Com.Lilarcor.Cheeseknife;
+using Android.Support.Design.Widget;
 
 namespace SweetScent.Fragments
 {
-    public class MapsFragment : SupportMapFragment, IOnMapReadyCallback
+    public class MapsFragment : Fragment, IOnMapReadyCallback
     {
+        private SupportMapFragment _mapFragment;
         private GoogleMap _map;
         private LocationManager _locationManager;
         private IPogoService _pogoService;
-        private PogoMapResponse _pogoResponse;
-
         private Location _currentLocation;
 
-        public static new MapsFragment NewInstance()
+        private FloatingActionButton _searchBtn;
+        private Android.Widget.ProgressBar _progressBar;
+
+        public static MapsFragment NewInstance()
         {
             return new MapsFragment();
         }
@@ -29,10 +34,33 @@ namespace SweetScent.Fragments
         {
             base.OnCreate(savedInstanceState);
             _locationManager = Activity.GetSystemService(Context.LocationService) as LocationManager;
-            GetMapAsync(this);
         }
 
-        public void OnMapReady(GoogleMap googleMap)
+        public override View OnCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
+        {
+            var view = inflater.Inflate(Resource.Layout.fragment_maps, container, false);
+            _searchBtn = view.FindViewById<FloatingActionButton>(Resource.Id.maps_search_button);
+            _progressBar = view.FindViewById<Android.Widget.ProgressBar>(Resource.Id.maps_progress_bar);
+
+            _searchBtn.Click += OnClickSearchButton;
+            return view;
+        }
+
+        public override void OnActivityCreated(Bundle savedInstanceState)
+        {
+            base.OnActivityCreated(savedInstanceState);
+            _mapFragment = (SupportMapFragment) ChildFragmentManager.FindFragmentById(Resource.Id.map);
+            if (_mapFragment == null)
+            {
+                _mapFragment = SupportMapFragment.NewInstance();
+                ChildFragmentManager.BeginTransaction()
+                    .Replace(Resource.Id.map, _mapFragment)
+                    .Commit();
+            }
+            _mapFragment.GetMapAsync(this);
+        }
+
+        public async void OnMapReady(GoogleMap googleMap)
         {
             _map = googleMap;
             _map.MyLocationEnabled = true;
@@ -45,9 +73,8 @@ namespace SweetScent.Fragments
                 DefaultLongitude = _currentLocation.Longitude,
                 DefaultAltitude = _currentLocation.Altitude
             });
-
+            await _pogoService.LoginAsync();
             CenterCamera();
-            LoadPogoMap();
         }
 
         private void CenterCamera()
@@ -65,8 +92,15 @@ namespace SweetScent.Fragments
             }
         }
 
-        private async Task LoadPogoMap()
+        private void OnClickSearchButton(object sender, EventArgs e)
         {
+            LoadPogoMapAsync();
+        }
+
+        private async void LoadPogoMapAsync()
+        {
+            ShowProgressBar(true);
+
             var mapData = await _pogoService.GetMapData();
 
             foreach (var pokemon in mapData.Pokemon)
@@ -91,6 +125,23 @@ namespace SweetScent.Fragments
                     .SetTitle(pokemon.PokemonId.ToString())
                     .SetSnippet(timeOut);
                 _map.AddMarker(marker);
+            }
+            ShowProgressBar(false);
+        }
+
+        private void ShowProgressBar(bool status)
+        {
+            if (status)
+            {
+                _progressBar.Visibility = ViewStates.Visible;
+                _searchBtn.SetImageDrawable(Context.GetDrawable(Resource.Drawable.ic_pause_white_24dp));
+                _searchBtn.Enabled = false;
+            }
+            else
+            {
+                _progressBar.Visibility = ViewStates.Invisible;
+                _searchBtn.SetImageDrawable(Context.GetDrawable(Resource.Drawable.ic_track_changes_white_24dp));
+                _searchBtn.Enabled = true;
             }
         }
     }
