@@ -22,7 +22,9 @@ namespace SweetScent.Fragments
         private IPogoService _pogoService;
         private Location _currentLocation;
 
+        [InjectView(Resource.Id.maps_search_button)]
         private FloatingActionButton _searchBtn;
+        [InjectView(Resource.Id.maps_progress_bar)]
         private Android.Widget.ProgressBar _progressBar;
 
         public static MapsFragment NewInstance()
@@ -38,12 +40,9 @@ namespace SweetScent.Fragments
 
         public override View OnCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
         {
-            var view = inflater.Inflate(Resource.Layout.fragment_maps, container, false);
-            _searchBtn = view.FindViewById<FloatingActionButton>(Resource.Id.maps_search_button);
-            _progressBar = view.FindViewById<Android.Widget.ProgressBar>(Resource.Id.maps_progress_bar);
-
-            _searchBtn.Click += OnClickSearchButton;
-            return view;
+            var v = inflater.Inflate(Resource.Layout.fragment_maps, container, false);
+            Cheeseknife.Inject(this, v);
+            return v;
         }
 
         public override void OnActivityCreated(Bundle savedInstanceState)
@@ -92,6 +91,7 @@ namespace SweetScent.Fragments
             }
         }
 
+        [InjectOnClick(Resource.Id.maps_search_button)]
         private void OnClickSearchButton(object sender, EventArgs e)
         {
             LoadPogoMapAsync();
