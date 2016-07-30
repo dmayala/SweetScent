@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using System.Linq;
 using System;
 using PokemonGo.RocketAPI;
+using System.Threading;
 
 namespace SweetScent.Core.Services
 {
@@ -22,21 +23,20 @@ namespace SweetScent.Core.Services
             _client.Player.SetCoordinates(lat, lon, alt);
         }
 
-        public async Task<PogoMapResponse> GetMapData()
+        public async Task<PogoMapResponse> GetMapData(CancellationToken token = default(CancellationToken))
         {
             try
             {
-                var mapObjects = await _client.Map.GetMapObjects();
+                await Task.Delay(10000);
+                var mapObjects = await _client.Map.GetMapObjects(token);
                 var pokemon = mapObjects.MapCells.SelectMany(m => m.CatchablePokemons);
                 var forts = mapObjects.MapCells.SelectMany(m => m.Forts);
 
                 return new PogoMapResponse(forts, pokemon);
-            }
-            catch (Exception ex)
+            } catch (Exception ex)
             {
-                
-            }
 
+            }
             return default(PogoMapResponse);
         }
 

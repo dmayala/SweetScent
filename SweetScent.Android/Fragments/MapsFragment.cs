@@ -4,7 +4,6 @@ using Android.OS;
 using Android.Locations;
 using Android.Content;
 using SweetScent.Core.Services;
-using System.Threading.Tasks;
 using SweetScent.Utils;
 using System;
 using Android.Views;
@@ -12,6 +11,7 @@ using Android.Support.V4.App;
 using Com.Lilarcor.Cheeseknife;
 using Android.Support.Design.Widget;
 using Microsoft.Practices.Unity;
+using System.Threading;
 
 namespace SweetScent.Fragments
 {
@@ -27,6 +27,9 @@ namespace SweetScent.Fragments
         private FloatingActionButton _searchBtn;
         [InjectView(Resource.Id.maps_progress_bar)]
         private Android.Widget.ProgressBar _progressBar;
+
+        private bool isSearching = false;
+        private CancellationTokenSource cts;
 
         public static MapsFragment NewInstance()
         {
@@ -61,7 +64,7 @@ namespace SweetScent.Fragments
             _mapFragment.GetMapAsync(this);
         }
 
-        public async void OnMapReady(GoogleMap googleMap)
+        public void OnMapReady(GoogleMap googleMap)
         {
             _map = googleMap;
             _map.MyLocationEnabled = true;
@@ -87,46 +90,43 @@ namespace SweetScent.Fragments
             }
         }
 
-        [InjectOnClick(Resource.Id.maps_search_button)]
-        private void OnClickSearchButton(object sender, EventArgs e)
-        {
-            if (_currentLocation != null)
-            {
-                _pogoService.SetInitialLocation(_currentLocation.Latitude, _currentLocation.Longitude, _currentLocation.Altitude);
-                LoadPogoMapAsync();
-            }
-        }
-
         private async void LoadPogoMapAsync()
         {
             ShowProgressBar(true);
+            var curScreen = _map.Projection.VisibleRegion.LatLngBounds;
 
-            var mapData = await _pogoService.GetMapData();
-
-            foreach (var pokemon in mapData.Pokemon)
+            try
             {
-                // Grab correct icon for Pokemon
-                var uri = "p" + (int) pokemon.PokemonId;
-                int resourceID = Context.Resources.GetIdentifier(uri, "drawable", Context.PackageName);
+                var mapData = await _pogoService.GetMapData(cts.Token);
 
-                // Find the duration
-                var expirationDate = DateTimeOffset.FromUnixTimeMilliseconds(pokemon.ExpirationTimestampMs).UtcDateTime;
-                var duration = expirationDate.Subtract(DateTime.Now);
-                var timeOut = string.Format("{0:D2}:{1:D2}", duration.Minutes, duration.Seconds);
+                foreach (var pokemon in mapData.Pokemon)
+                {
+                    // Grab correct icon for Pokemon
+                    var uri = "p" + (int)pokemon.PokemonId;
+                    int resourceID = Context.Resources.GetIdentifier(uri, "drawable", Context.PackageName);
 
-                int scale = 2;
+                    // Find the duration
+                    var expirationDate = DateTimeOffset.FromUnixTimeMilliseconds(pokemon.ExpirationTimestampMs).UtcDateTime;
+                    var duration = expirationDate.Subtract(DateTime.Now);
+                    var timeOut = string.Format("{0:D2}:{1:D2}", duration.Minutes, duration.Seconds);
 
-                var bitmap = DrawableUtils.WriteTextOnDrawable(resourceID, timeOut, scale, Context);
+                    int scale = 2;
 
-                var point = new LatLng(pokemon.Latitude, pokemon.Longitude);
-                var marker = new MarkerOptions()
-                    .SetIcon(BitmapDescriptorFactory.FromBitmap(bitmap))
-                    .SetPosition(point)
-                    .SetTitle(pokemon.PokemonId.ToString())
-                    .SetSnippet(timeOut);
-                _map.AddMarker(marker);
+                    var bitmap = DrawableUtils.WriteTextOnDrawable(resourceID, timeOut, scale, Context);
+
+                    var point = new LatLng(pokemon.Latitude, pokemon.Longitude);
+                    var marker = new MarkerOptions()
+                        .SetIcon(BitmapDescriptorFactory.FromBitmap(bitmap))
+                        .SetPosition(point)
+                        .SetTitle(pokemon.PokemonId.ToString())
+                        .SetSnippet(timeOut);
+                    _map.AddMarker(marker);
+                }
             }
-            ShowProgressBar(false);
+            finally
+            {
+                ShowProgressBar(false);
+            }
         }
 
         private void ShowProgressBar(bool status)
@@ -135,14 +135,33 @@ namespace SweetScent.Fragments
             {
                 _progressBar.Visibility = ViewStates.Visible;
                 _searchBtn.SetImageDrawable(Context.GetDrawable(Resource.Drawable.ic_pause_white_24dp));
-                _searchBtn.Enabled = false;
             }
             else
             {
                 _progressBar.Visibility = ViewStates.Invisible;
                 _searchBtn.SetImageDrawable(Context.GetDrawable(Resource.Drawable.ic_track_changes_white_24dp));
-                _searchBtn.Enabled = true;
             }
+        }
+
+        [InjectOnClick(Resource.Id.maps_search_button)]
+        private void OnClickSearchButton(object sender, EventArgs e)
+        {
+            if (!isSearching)
+            {
+                isSearching = true;
+                if (_currentLocation != null)
+                {
+                    cts = new CancellationTokenSource();
+                    _pogoService.SetInitialLocation(_currentLocation.Latitude, _currentLocation.Longitude, _currentLocation.Altitude);
+                    LoadPogoMapAsync();
+                }
+            } else
+            {
+                cts.Cancel();
+                cts = null;
+                isSearching = false;
+            }
+
         }
     }
 }
