@@ -11,6 +11,7 @@ using Android.Views;
 using Android.Support.V4.App;
 using Com.Lilarcor.Cheeseknife;
 using Android.Support.Design.Widget;
+using Microsoft.Practices.Unity;
 
 namespace SweetScent.Fragments
 {
@@ -36,6 +37,7 @@ namespace SweetScent.Fragments
         {
             base.OnCreate(savedInstanceState);
             _locationManager = Activity.GetSystemService(Context.LocationService) as LocationManager;
+            _pogoService = App.Container.Resolve<IPogoService>();
         }
 
         public override View OnCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
@@ -67,12 +69,6 @@ namespace SweetScent.Fragments
             var criteria = new Criteria();
             var provider = _locationManager.GetBestProvider(criteria, true);
             _currentLocation = _locationManager.GetLastKnownLocation(provider);
-            _pogoService = new PogoService(new Settings() {
-                DefaultLatitude = _currentLocation.Latitude,
-                DefaultLongitude = _currentLocation.Longitude,
-                DefaultAltitude = _currentLocation.Altitude
-            });
-            await _pogoService.LoginAsync();
             CenterCamera();
         }
 
@@ -94,7 +90,11 @@ namespace SweetScent.Fragments
         [InjectOnClick(Resource.Id.maps_search_button)]
         private void OnClickSearchButton(object sender, EventArgs e)
         {
-            LoadPogoMapAsync();
+            if (_currentLocation != null)
+            {
+                _pogoService.SetInitialLocation(_currentLocation.Latitude, _currentLocation.Longitude, _currentLocation.Altitude);
+                LoadPogoMapAsync();
+            }
         }
 
         private async void LoadPogoMapAsync()

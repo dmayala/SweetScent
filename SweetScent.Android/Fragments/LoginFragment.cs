@@ -10,6 +10,8 @@ using System;
 using Android.Runtime;
 using Android.Support.Design.Widget;
 using Android.Content;
+using SweetScent.Core.Services;
+using Microsoft.Practices.Unity;
 
 namespace SweetScent.Fragments
 {
@@ -21,8 +23,8 @@ namespace SweetScent.Fragments
         private EditText _username;
         [InjectView(Resource.Id.login_password)]
         private EditText _password;
-        [InjectView(Resource.Id.login_button)]
-        private Button _loginBtn;
+
+        private IPogoService _pogoService;
 
         public static LoginFragment NewInstance()
         {
@@ -33,6 +35,7 @@ namespace SweetScent.Fragments
         {
             base.OnCreate(savedInstanceState);
             GetPermissions();
+            _pogoService = App.Container.Resolve<IPogoService>();
         }
 
         public override View OnCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
@@ -77,9 +80,21 @@ namespace SweetScent.Fragments
         [InjectOnClick(Resource.Id.login_button)]
         private void OnClickLoginButton(object sender, EventArgs e)
         {
-            var intent = MapsActivity.NewIntent(Context);
-            intent.SetFlags(ActivityFlags.NewTask | ActivityFlags.ClearTop);
-            StartActivity(intent);
+            _pogoService.LoginAsync(_username.Text, _password.Text)
+                .ContinueWith((t) =>
+                {
+                    if (!t.IsFaulted)
+                    {
+                        var intent = MapsActivity.NewIntent(Context);
+                        intent.SetFlags(ActivityFlags.NewTask | ActivityFlags.ClearTop);
+                        StartActivity(intent);
+                    }
+                    else
+                    {
+                        var snack = Snackbar.Make(View, t.Exception.Message, Snackbar.LengthLong);
+                        snack.Show();
+                    }
+                });
         }
     }
 }

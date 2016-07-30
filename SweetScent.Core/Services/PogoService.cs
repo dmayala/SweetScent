@@ -17,6 +17,11 @@ namespace SweetScent.Core.Services
             _client = new Client(new SettingsMap(_settings));
         }
 
+        public void SetInitialLocation(double lat, double lon, double alt)
+        {
+            _client.Player.SetCoordinates(lat, lon, alt);
+        }
+
         public async Task<PogoMapResponse> GetMapData()
         {
             try
@@ -35,8 +40,10 @@ namespace SweetScent.Core.Services
             return default(PogoMapResponse);
         }
 
-        public async Task LoginAsync()
+        public async Task LoginAsync(string username, string password)
         {
+            _client.Settings.PtcUsername = username;
+            _client.Settings.PtcPassword = password;
             await _client.Login.DoPtcLogin();
         }
     }
