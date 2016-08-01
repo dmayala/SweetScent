@@ -13,6 +13,9 @@ using Microsoft.Practices.Unity;
 using System.Threading;
 using Realms;
 using SweetScent.Core.Models;
+using System.Threading.Tasks;
+using SweetScent.Utils;
+using System.Linq;
 
 namespace SweetScent.Fragments
 {
@@ -94,20 +97,23 @@ namespace SweetScent.Fragments
             }
         }
 
-        private async void LoadPogoMapAsync()
+        private async Task LoadPogoMapAsync()
         {
             ShowProgressBar(true);
             var curScreen = _map.Projection.VisibleRegion.LatLngBounds;
 
             try
             {
-                var mapData = await _pogoService.GetMapData(cts.Token);
-                var pokemonCollection = _realm.All<Pokemon>();
-
+                await MapLoaderUtil.Run(cts.Token);
+                var pokemonCollection = _realm.All<Pokemon>().ToList();
                 foreach (var pokemon in pokemonCollection)
                 {
                     _map.AddMarker(pokemon.GetMarker(Context));
                 }
+            }
+            catch (Exception ex)
+            {
+
             }
             finally
             {
