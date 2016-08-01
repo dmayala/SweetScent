@@ -4,7 +4,6 @@ using Android.OS;
 using Android.Locations;
 using Android.Content;
 using SweetScent.Core.Services;
-using SweetScent.Utils;
 using System;
 using Android.Views;
 using Android.Support.V4.App;
@@ -12,6 +11,8 @@ using Com.Lilarcor.Cheeseknife;
 using Android.Support.Design.Widget;
 using Microsoft.Practices.Unity;
 using System.Threading;
+using Realms;
+using SweetScent.Core.Models;
 
 namespace SweetScent.Fragments
 {
@@ -20,8 +21,10 @@ namespace SweetScent.Fragments
         private SupportMapFragment _mapFragment;
         private GoogleMap _map;
         private LocationManager _locationManager;
-        private IPogoService _pogoService;
         private Location _currentLocation;
+
+        private Realm _realm;
+        private IPogoService _pogoService;
 
         [InjectView(Resource.Id.maps_search_button)]
         private FloatingActionButton _searchBtn;
@@ -41,6 +44,7 @@ namespace SweetScent.Fragments
             base.OnCreate(savedInstanceState);
             _locationManager = Activity.GetSystemService(Context.LocationService) as LocationManager;
             _pogoService = App.Container.Resolve<IPogoService>();
+            _realm = Realm.GetInstance();
         }
 
         public override View OnCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
@@ -98,29 +102,11 @@ namespace SweetScent.Fragments
             try
             {
                 var mapData = await _pogoService.GetMapData(cts.Token);
+                var pokemonCollection = _realm.All<Pokemon>();
 
-                foreach (var pokemon in mapData.Pokemon)
+                foreach (var pokemon in pokemonCollection)
                 {
-                    // Grab correct icon for Pokemon
-                    var uri = "p" + (int)pokemon.PokemonId;
-                    int resourceID = Context.Resources.GetIdentifier(uri, "drawable", Context.PackageName);
-
-                    // Find the duration
-                    var expirationDate = DateTimeOffset.FromUnixTimeMilliseconds(pokemon.ExpirationTimestampMs).UtcDateTime;
-                    var duration = expirationDate.Subtract(DateTime.Now);
-                    var timeOut = string.Format("{0:D2}:{1:D2}", duration.Minutes, duration.Seconds);
-
-                    int scale = 2;
-
-                    var bitmap = DrawableUtils.WriteTextOnDrawable(resourceID, timeOut, scale, Context);
-
-                    var point = new LatLng(pokemon.Latitude, pokemon.Longitude);
-                    var marker = new MarkerOptions()
-                        .SetIcon(BitmapDescriptorFactory.FromBitmap(bitmap))
-                        .SetPosition(point)
-                        .SetTitle(pokemon.PokemonId.ToString())
-                        .SetSnippet(timeOut);
-                    _map.AddMarker(marker);
+                    _map.AddMarker(pokemon.GetMarker(Context));
                 }
             }
             finally

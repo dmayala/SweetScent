@@ -46,6 +46,10 @@
     <Reference Include="Cheeseknife">
       <HintPath>..\Components\cheeseknife-1.0\lib\android\Cheeseknife.dll</HintPath>
     </Reference>
+    <Reference Include="DotNetCross.Memory.Unsafe, Version=0.2.2.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\DotNetCross.Memory.Unsafe.0.2.2\lib\dotnet\DotNetCross.Memory.Unsafe.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="Google.Protobuf, Version=3.0.0.0, Culture=neutral, PublicKeyToken=a7d26565bac4d604, processorArchitecture=MSIL">
       <HintPath>..\packages\Google.Protobuf.3.0.0-beta3\lib\dotnet\Google.Protobuf.dll</HintPath>
       <Private>True</Private>
@@ -62,6 +66,10 @@
     <Reference Include="mscorlib" />
     <Reference Include="POGOProtos, Version=1.4.1.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\POGOProtos.1.4.1-alpha\lib\portable45-net45+win8+wpa81\POGOProtos.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Realm, Version=0.77.1.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Realm.0.77.1\lib\MonoAndroid44\Realm.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="System" />
@@ -110,6 +118,7 @@
     <Compile Include="Activities\MapsActivity.cs" />
     <Compile Include="Activities\SingleFragmentActivity.cs" />
     <Compile Include="App.cs" />
+    <Compile Include="Extensions\PokemonExtensions.cs" />
     <Compile Include="Fragments\LoginFragment.cs" />
     <Compile Include="Fragments\MapsFragment.cs" />
     <Compile Include="Resources\Resource.Designer.cs" />
@@ -640,6 +649,9 @@
   <ItemGroup>
     <AndroidResource Include="Resources\drawable\ic_pause_white_24dp.xml" />
   </ItemGroup>
+  <ItemGroup>
+    <Content Include="FodyWeavers.xml" />
+  </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.CSharp.targets" />
   <Import Project="..\packages\Xamarin.Android.Support.Vector.Drawable.23.4.0.1\build\Xamarin.Android.Support.Vector.Drawable.targets" Condition="Exists('..\packages\Xamarin.Android.Support.Vector.Drawable.23.4.0.1\build\Xamarin.Android.Support.Vector.Drawable.targets')" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
@@ -648,8 +660,12 @@
     </PropertyGroup>
     <Error Condition="!Exists('..\packages\Xamarin.Android.Support.Vector.Drawable.23.4.0.1\build\Xamarin.Android.Support.Vector.Drawable.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Xamarin.Android.Support.Vector.Drawable.23.4.0.1\build\Xamarin.Android.Support.Vector.Drawable.targets'))" />
     <Error Condition="!Exists('..\packages\Xamarin.GooglePlayServices.Basement.29.0.0.2\build\Xamarin.GooglePlayServices.Basement.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Xamarin.GooglePlayServices.Basement.29.0.0.2\build\Xamarin.GooglePlayServices.Basement.targets'))" />
+    <Error Condition="!Exists('..\packages\Fody.1.29.4\build\dotnet\Fody.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Fody.1.29.4\build\dotnet\Fody.targets'))" />
+    <Error Condition="!Exists('..\packages\Realm.0.77.1\build\Realm.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Realm.0.77.1\build\Realm.targets'))" />
   </Target>
   <Import Project="..\packages\Xamarin.GooglePlayServices.Basement.29.0.0.2\build\Xamarin.GooglePlayServices.Basement.targets" Condition="Exists('..\packages\Xamarin.GooglePlayServices.Basement.29.0.0.2\build\Xamarin.GooglePlayServices.Basement.targets')" />
+  <Import Project="..\packages\Fody.1.29.4\build\dotnet\Fody.targets" Condition="Exists('..\packages\Fody.1.29.4\build\dotnet\Fody.targets')" />
+  <Import Project="..\packages\Realm.0.77.1\build\Realm.targets" Condition="Exists('..\packages\Realm.0.77.1\build\Realm.targets')" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
      Other similar extension points exist, see Microsoft.Common.targets.
 		<Target Name="BeforeBuild">

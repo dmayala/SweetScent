@@ -25,19 +25,11 @@ namespace SweetScent.Core.Services
 
         public async Task<PogoMapResponse> GetMapData(CancellationToken token = default(CancellationToken))
         {
-            try
-            {
-                await Task.Delay(10000);
-                var mapObjects = await _client.Map.GetMapObjects(token);
-                var pokemon = mapObjects.MapCells.SelectMany(m => m.CatchablePokemons);
-                var forts = mapObjects.MapCells.SelectMany(m => m.Forts);
+            var mapObjects = await _client.Map.GetMapObjects(token);
+            var pokemon = mapObjects.MapCells.SelectMany(m => m.CatchablePokemons);
+            var forts = mapObjects.MapCells.SelectMany(m => m.Forts);
 
-                return new PogoMapResponse(forts, pokemon);
-            } catch (Exception ex)
-            {
-
-            }
-            return default(PogoMapResponse);
+            return new PogoMapResponse(forts, pokemon);
         }
 
         public async Task LoginAsync(string username, string password)
