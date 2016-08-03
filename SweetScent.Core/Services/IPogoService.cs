@@ -8,6 +8,6 @@ namespace SweetScent.Core.Services
     {
         Task LoginAsync(string username, string password);
         Task<PogoMapResponse> GetMapData(CancellationToken token = default(CancellationToken));
-        void SetInitialLocation(double lat, double lon, double alt);
+        void SetInitialLocation(double lat, double lon, double alt = 0);
     }
 }

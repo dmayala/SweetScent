@@ -18,7 +18,7 @@ namespace SweetScent.Core.Services
             _client = new Client(new SettingsMap(_settings));
         }
 
-        public void SetInitialLocation(double lat, double lon, double alt)
+        public void SetInitialLocation(double lat, double lon, double alt = 0)
         {
             _client.Player.SetCoordinates(lat, lon, alt);
         }

@@ -16,6 +16,7 @@ using SweetScent.Core.Models;
 using System.Threading.Tasks;
 using SweetScent.Utils;
 using System.Linq;
+using System.Collections.Generic;
 
 namespace SweetScent.Fragments
 {
@@ -25,6 +26,7 @@ namespace SweetScent.Fragments
         private GoogleMap _map;
         private LocationManager _locationManager;
         private Location _currentLocation;
+        private List<LatLng> _scanMap = new List<LatLng>();
 
         private Realm _realm;
         private IPogoService _pogoService;
@@ -36,6 +38,8 @@ namespace SweetScent.Fragments
 
         private bool isSearching = false;
         private CancellationTokenSource cts;
+
+        private Dictionary<long, Marker> _pokemonMarkers = new Dictionary<long, Marker>();
 
         public static MapsFragment NewInstance()
         {
@@ -97,23 +101,84 @@ namespace SweetScent.Fragments
             }
         }
 
-        private async Task LoadPogoMapAsync()
+        private async Task RefreshMapAsync()
         {
-            ShowProgressBar(true);
-            var curScreen = _map.Projection.VisibleRegion.LatLngBounds;
-
             try
             {
-                await MapLoaderUtil.Run(cts.Token);
+                var curScreen = _map.Projection.VisibleRegion.LatLngBounds;
                 var pokemonCollection = _realm.All<Pokemon>().ToList();
                 foreach (var pokemon in pokemonCollection)
                 {
-                    _map.AddMarker(pokemon.GetMarker(Context));
+                    var encounterId = pokemon.EncounterId;
+
+                    if (curScreen.Contains(new LatLng(pokemon.Latitude, pokemon.Longitude)))
+                    {
+                        var expirationDate = DateTimeOffset.FromUnixTimeMilliseconds(pokemon.Expires).UtcDateTime;
+                        bool isNotExpired = expirationDate.Subtract(DateTime.UtcNow).Ticks > 0;
+
+                        if (isNotExpired)
+                        {
+                            if (_pokemonMarkers.ContainsKey(encounterId))
+                            {
+                                var marker = _pokemonMarkers[encounterId];
+                                if (marker != null)
+                                {
+                                    pokemon.UpdateMarker(marker, Context);
+                                }
+                            }
+                            else
+                            {
+                                _pokemonMarkers.Add(pokemon.EncounterId, _map.AddMarker(pokemon.GetMarker(Context)));
+                            }
+                        }
+                        else
+                        {
+                            if (_pokemonMarkers.ContainsKey(encounterId))
+                            {
+                                _pokemonMarkers[encounterId].Remove();
+                                _pokemonMarkers.Remove(encounterId);
+                            }
+
+                            await Task.Run(() =>
+                            {
+                                using (var realm = Realm.GetInstance())
+                                {
+                                    var expiredPokemon = realm.All<Pokemon>().First(p => p.EncounterId == encounterId);
+
+                                    using (var trans = realm.BeginWrite())
+                                    {
+                                        realm.Remove(expiredPokemon);
+                                        trans.Commit();
+                                    }
+                                }
+                            });
+
+                        }
+                    }
+                    else
+                    {
+                        if (_pokemonMarkers[encounterId] != null)
+                            _pokemonMarkers[encounterId].Remove();
+
+                        _pokemonMarkers.Remove(encounterId);
+                    }
                 }
             }
             catch (Exception ex)
             {
 
+            }
+        }
+
+        private async Task ScanMapAsync()
+        {
+            ShowProgressBar(true);
+
+            var scanValue = 4;
+            _scanMap = GenerationUtils.MakeHexScanMap(_map.CameraPosition.Target, scanValue, 1, new List<LatLng>());
+            try
+            {
+                await MapLoaderUtil.Run(_scanMap, RefreshMapAsync, cts.Token);
             }
             finally
             {
@@ -145,7 +210,7 @@ namespace SweetScent.Fragments
                 {
                     cts = new CancellationTokenSource();
                     _pogoService.SetInitialLocation(_currentLocation.Latitude, _currentLocation.Longitude, _currentLocation.Altitude);
-                    LoadPogoMapAsync();
+                    ScanMapAsync();
                 }
             } else
             {
