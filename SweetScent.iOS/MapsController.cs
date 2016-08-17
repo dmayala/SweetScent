@@ -12,6 +12,7 @@ using SweetScent.iOS.Utils;
 using Realms;
 using SweetScent.Core.Models;
 using System.Linq;
+using SweetScent.iOS.Annotations;
 
 namespace SweetScent.iOS
 {
@@ -31,13 +32,16 @@ namespace SweetScent.iOS
         public MapsController (IntPtr handle) : base (handle)
         {
             _pogoService = App.Container.Resolve<IPogoService>();
+            _realm = Realm.GetInstance();
         }
 
         public override void ViewDidLoad()
         {
             base.ViewDidLoad();
+            MapView.Delegate = this;
             MapView.ShowsUserLocation = true;
-            MapView.DidUpdateUserLocation += MapView_DidUpdateUserLocation;
+
+            SearchButton.TouchUpInside += OnClickSearchButton;
         }
 
         private void MapView_DidUpdateUserLocation(object sender, MKUserLocationEventArgs e)
@@ -153,10 +157,22 @@ namespace SweetScent.iOS
             }
         }
 
-        [Export("viewForAnnotation:")]
-        public MKAnnotationView ViewForAnnotation(IMKAnnotation annotation)
+        [Export("mapView:didUpdateUserLocation:")]
+        private void DidUpdateUserLocation(MKMapView mapView, MKUserLocation userLocation)
         {
-            // To do
+            _currentLocation = userLocation;
+            var region = MKCoordinateRegion.FromDistance(userLocation.Coordinate, 1500, 1500);
+            mapView.SetRegion(region, animated: true);
+        }
+
+        [Export("mapView:viewForAnnotation:")]
+        public MKAnnotationView ViewForAnnotation(MKMapView mapView, IMKAnnotation annotation)
+        {
+            var pokemon = (annotation as PokemonAnnotation)?.Pokemon;
+            if (pokemon != null)
+            {
+                return pokemon.GetAnnotationView(annotation);
+            }
             return null;
         }
     }

@@ -18,11 +18,20 @@ namespace SweetScent.iOS
         [GeneratedCode ("iOS Designer", "1.0")]
         MapKit.MKMapView MapView { get; set; }
 
+        [Outlet]
+        [GeneratedCode ("iOS Designer", "1.0")]
+        UIKit.UIButton SearchButton { get; set; }
+
         void ReleaseDesignerOutlets ()
         {
             if (MapView != null) {
                 MapView.Dispose ();
                 MapView = null;
+            }
+
+            if (SearchButton != null) {
+                SearchButton.Dispose ();
+                SearchButton = null;
             }
         }
     }

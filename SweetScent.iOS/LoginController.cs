@@ -22,22 +22,21 @@ namespace SweetScent.iOS
 
         private async void OnClickLoginButton(object sender, EventArgs e)
         {
-            PerformSegue("LoginSuccessSegue", this);
-            //try
-            //{
-            //    await _pogoService.LoginAsync(UsernameField.Text, PasswordField.Text);
-            //    PerformSegue("LoginSuccessSegue", this);
-            //}
-            //catch (Exception ex)
-            //{
-            //    var alert = new UIAlertView()
-            //    {
-            //        Title = "Login Error",
-            //        Message = ex.Message
-            //    };
-            //    alert.AddButton("OK");
-            //    alert.Show();
-            //}
+            try
+            {
+                await _pogoService.LoginAsync(UsernameField.Text, PasswordField.Text);
+                PerformSegue("LoginSuccessSegue", this);
+            }
+            catch (Exception ex)
+            {
+                var alert = new UIAlertView()
+                {
+                    Title = "Login Error",
+                    Message = ex.Message
+                };
+                alert.AddButton("OK");
+                alert.Show();
+            }
         }
     }
 }

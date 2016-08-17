@@ -1,5 +1,6 @@
 ﻿using CoreLocation;
 using MapKit;
+using SweetScent.iOS.Annotations;
 using System;
 using UIKit;
 
@@ -29,8 +30,7 @@ namespace SweetScent.Core.Models
 
         public static IMKAnnotation GetAnnotation(this Pokemon pokemon)
         {
-            var point = new CLLocationCoordinate2D(pokemon.Latitude, pokemon.Longitude);
-            var pointAnnotation = new MKPointAnnotation() { Coordinate = point };
+            var pointAnnotation = new PokemonAnnotation(pokemon);
             return pointAnnotation;
         }
 

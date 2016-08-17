@@ -23,7 +23,19 @@
     <ConsolePause>false</ConsolePause>
     <MtouchArch>i386</MtouchArch>
     <MtouchLink>None</MtouchLink>
-    <MtouchDebug>true</MtouchDebug>
+    <MtouchDebug>True</MtouchDebug>
+    <MtouchSdkVersion>9.3</MtouchSdkVersion>
+    <MtouchProfiling>False</MtouchProfiling>
+    <MtouchFastDev>False</MtouchFastDev>
+    <MtouchUseLlvm>False</MtouchUseLlvm>
+    <MtouchUseThumb>False</MtouchUseThumb>
+    <MtouchEnableBitcode>False</MtouchEnableBitcode>
+    <MtouchUseSGen>False</MtouchUseSGen>
+    <MtouchUseRefCounting>False</MtouchUseRefCounting>
+    <OptimizePNGs>True</OptimizePNGs>
+    <MtouchTlsProvider>Default</MtouchTlsProvider>
+    <MtouchHttpClientHandler>HttpClientHandler</MtouchHttpClientHandler>
+    <MtouchFloat32>False</MtouchFloat32>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|iPhoneSimulator' ">
     <DebugType>none</DebugType>
@@ -86,6 +98,7 @@
     <CodesignKey>iPhone Distribution</CodesignKey>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="Annotations\PokemonAnnotation.cs" />
     <Compile Include="App.cs" />
     <Compile Include="Extensions\PokemonExtensions.cs" />
     <Compile Include="LoginController.cs" />
@@ -157,6 +170,18 @@
       <InProject>false</InProject>
     </ImageAsset>
     <ImageAsset Include="Resources\Assets.xcassets\LaunchImages.launchimage\Contents.json">
+      <InProject>false</InProject>
+    </ImageAsset>
+    <ImageAsset Include="Resources\Assets.xcassets\Location.imageset\Contents.json">
+      <InProject>false</InProject>
+    </ImageAsset>
+    <ImageAsset Include="Resources\Assets.xcassets\Location.imageset\Fichier 6.png">
+      <InProject>false</InProject>
+    </ImageAsset>
+    <ImageAsset Include="Resources\Assets.xcassets\Location.imageset\Fichier 7.png">
+      <InProject>false</InProject>
+    </ImageAsset>
+    <ImageAsset Include="Resources\Assets.xcassets\Location.imageset\Fichier 8.png">
       <InProject>false</InProject>
     </ImageAsset>
   </ItemGroup>
