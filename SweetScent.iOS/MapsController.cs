@@ -13,6 +13,7 @@ using Realms;
 using SweetScent.Core.Models;
 using System.Linq;
 using SweetScent.iOS.Annotations;
+using System.Diagnostics;
 
 namespace SweetScent.iOS
 {
@@ -139,7 +140,7 @@ namespace SweetScent.iOS
             }
             catch (Exception ex)
             {
-
+                Debug.WriteLine($"Could not refresh map: {ex.Message}");
             }
         }
 
@@ -151,9 +152,9 @@ namespace SweetScent.iOS
             {
                 await MapLoaderUtil.Run(_scanMap, RefreshMapAsync, cts.Token);
             }
-            finally
+            catch (Exception ex)
             {
-                // ShowProgressBar(false);
+                Debug.WriteLine($"Could not scan map: {ex.Message}");
             }
         }
 
